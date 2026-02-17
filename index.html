@@ -1,197 +1,101 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Stroke Triage</title>
-<style>
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f2f4f7;}
-.header{background:#007AFF;color:white;padding:18px;font-size:20px;font-weight:600;}
-.container{padding:20px;max-width:720px;margin:auto;}
-.card{background:white;padding:20px;border-radius:16px;box-shadow:0 6px 20px rgba(0,0,0,0.08);margin-bottom:20px;}
-h2{margin-top:0;font-size:18px;}
-input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #ddd;margin-bottom:12px;font-size:16px;}
-.row{display:flex;gap:10px;margin-bottom:12px;}
-.row button{flex:1;padding:14px;border:none;border-radius:12px;font-size:16px;background:#e5e7ea;}
-.row button.active{background:#007AFF;color:white;}
-.primary{width:100%;padding:16px;border:none;border-radius:14px;font-size:18px;background:#007AFF;color:white;margin-top:10px;}
-.result{padding:16px;border-radius:12px;margin-top:15px;font-weight:600;white-space:pre-line;}
-.hidden{display:none;}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0ea5e9" />
+  <title>Stroke Triage（Web）</title>
+
+  <style>
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Sans","Yu Gothic UI",Arial,sans-serif;background:#0b1220;color:#e5e7eb}
+    .wrap{max-width:900px;margin:auto;padding:20px}
+    .card{background:#0f172a;border-radius:16px;padding:20px;margin-bottom:20px}
+    .btn{padding:12px 16px;border-radius:12px;border:none;background:#0ea5e9;color:#04202a;font-weight:600;cursor:pointer}
+    input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #334155;background:#0b1326;color:white;margin-bottom:10px}
+    .hidden{display:none}
+    .badge{padding:6px 10px;border-radius:999px;font-size:12px;background:#1e293b}
+  </style>
 </head>
+
 <body>
+<div class="wrap">
 
-<div class="header">Stroke Triage</div>
-<div class="container">
-
-<div id="intro" class="card">
-<p>本アプリは脳卒中初期対応の評価補助ツールです。</p>
-<button class="primary" onclick="start()">同意して評価開始</button>
+<div class="card" id="intro">
+  <h2>Stroke Triage Web版</h2>
+  <p>本ツールは脳卒中初期対応の入力補助ツールです。医療判断の代替ではありません。</p>
+  <button class="btn" onclick="start()">同意して開始</button>
 </div>
 
-<div id="main" class="hidden">
+<div id="app" class="hidden">
 
 <div class="card">
-<h2>基本情報</h2>
-<label>年齢</label>
-<input type="number" id="age">
-
-<label>性別</label>
-<select id="sex">
-<option value="男">男</option>
-<option value="女">女</option>
-</select>
-
-<label>最終健在（LKW）</label>
-<input type="datetime-local" id="lkw">
-
-<label>発見時刻</label>
-<input type="datetime-local" id="disc">
+  <h3>基本情報</h3>
+  <label>ID</label>
+  <input id="patientID">
+  <label>年齢</label>
+  <input id="age">
+  <label>最終健在</label>
+  <input type="datetime-local" id="lkw">
+  <label>発見時刻</label>
+  <input type="datetime-local" id="disc">
 </div>
 
 <div class="card">
-<h2>CPSS</h2>
-
-<div>顔面</div>
-<div class="row">
-<button onclick="setValue(this,'cpssFace',0)">正常</button>
-<button onclick="setValue(this,'cpssFace',1)">異常</button>
-</div>
-
-<div>上肢</div>
-<div class="row">
-<button onclick="setValue(this,'cpssArm',0)">正常</button>
-<button onclick="setValue(this,'cpssArm',1)">異常</button>
-</div>
-
-<div>言語</div>
-<div class="row">
-<button onclick="setValue(this,'cpssSpeech',0)">正常</button>
-<button onclick="setValue(this,'cpssSpeech',1)">異常</button>
-</div>
+  <h3>バイタル</h3>
+  <label>JCS</label>
+  <input id="jcs">
+  <label>BP</label>
+  <input id="bp">
+  <label>SpO2</label>
+  <input id="spo2">
 </div>
 
 <div class="card">
-<h2>KPSS</h2>
-
-<div>意識水準</div>
-<div class="row">
-<button onclick="setValue(this,'kpssArousal',0)">0</button>
-<button onclick="setValue(this,'kpssArousal',1)">1</button>
-<button onclick="setValue(this,'kpssArousal',2)">2</button>
+  <h3>まとめ</h3>
+  <textarea id="summary" rows="10"></textarea>
+  <button class="btn" onclick="generate()">生成</button>
+  <button class="btn" onclick="copyText()">コピー</button>
 </div>
-
-<div>意識障害</div>
-<div class="row">
-<button onclick="setValue(this,'kpssQuestion',0)">0</button>
-<button onclick="setValue(this,'kpssQuestion',1)">1</button>
-</div>
-
-<div>上肢右</div>
-<div class="row">
-<button onclick="setValue(this,'kpssUR',0)">0</button>
-<button onclick="setValue(this,'kpssUR',1)">1</button>
-<button onclick="setValue(this,'kpssUR',2)">2</button>
-</div>
-
-<div>上肢左</div>
-<div class="row">
-<button onclick="setValue(this,'kpssUL',0)">0</button>
-<button onclick="setValue(this,'kpssUL',1)">1</button>
-<button onclick="setValue(this,'kpssUL',2)">2</button>
-</div>
-
-<div>下肢右</div>
-<div class="row">
-<button onclick="setValue(this,'kpssLR',0)">0</button>
-<button onclick="setValue(this,'kpssLR',1)">1</button>
-<button onclick="setValue(this,'kpssLR',2)">2</button>
-</div>
-
-<div>下肢左</div>
-<div class="row">
-<button onclick="setValue(this,'kpssLL',0)">0</button>
-<button onclick="setValue(this,'kpssLL',1)">1</button>
-<button onclick="setValue(this,'kpssLL',2)">2</button>
-</div>
-
-<div>言語</div>
-<div class="row">
-<button onclick="setValue(this,'kpssLang',0)">0</button>
-<button onclick="setValue(this,'kpssLang',1)">1</button>
-<button onclick="setValue(this,'kpssLang',2)">2</button>
-</div>
-
-</div>
-
-<button class="primary" onclick="generate()">結果表示</button>
-
-<div id="output" class="result hidden"></div>
 
 </div>
 
 </div>
 
 <script>
-
-let record = {};
-
 function start(){
-document.getElementById("intro").classList.add("hidden");
-document.getElementById("main").classList.remove("hidden");
-}
-
-function setValue(btn,key,val){
-record[key]=val;
-let siblings=btn.parentNode.querySelectorAll("button");
-siblings.forEach(b=>b.classList.remove("active"));
-btn.classList.add("active");
-}
-
-function kpssScore(){
-let keys=['kpssArousal','kpssQuestion','kpssUR','kpssUL','kpssLR','kpssLL','kpssLang'];
-let sum=0;
-for(let k of keys){
-if(record[k]==null) return null;
-sum+=parseInt(record[k]);
-}
-return sum;
-}
-
-function cpssPositive(){
-if(record.cpssFace==null||record.cpssArm==null||record.cpssSpeech==null) return null;
-return record.cpssFace==1||record.cpssArm==1||record.cpssSpeech==1;
-}
-
-function elapsed(){
-let lkw=document.getElementById("lkw").value;
-let disc=document.getElementById("disc").value;
-if(!lkw||!disc) return "—";
-let diff=(new Date(disc)-new Date(lkw))/60000;
-return Math.floor(diff)+"分";
+  document.getElementById("intro").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
 }
 
 function generate(){
+  const id=document.getElementById("patientID").value||"-";
+  const age=document.getElementById("age").value||"-";
+  const lkw=document.getElementById("lkw").value||"-";
+  const disc=document.getElementById("disc").value||"-";
+  const jcs=document.getElementById("jcs").value||"-";
+  const bp=document.getElementById("bp").value||"-";
+  const spo2=document.getElementById("spo2").value||"-";
 
-let age=document.getElementById("age").value||"—";
-let sex=document.getElementById("sex").value;
+  const text=`脳卒中対応記録
 
-let text=
-`脳卒中対応記録
+ID: ${id}
+年齢: ${age}
+最終健在: ${lkw}
+発見時刻: ${disc}
 
-年齢: ${age}  性別: ${sex}
-経過: ${elapsed()}
+JCS: ${jcs}
+BP: ${bp}
+SpO2: ${spo2}`;
 
-CPSS: ${cpssPositive()==null?"未入力":cpssPositive()?"陽性":"陰性"}
-
-KPSS: ${kpssScore()==null?"未入力":kpssScore()+"点"}
-`;
-
-document.getElementById("output").innerText=text;
-document.getElementById("output").classList.remove("hidden");
-
+  document.getElementById("summary").value=text;
 }
 
+function copyText(){
+  const t=document.getElementById("summary");
+  t.select();
+  document.execCommand("copy");
+  alert("コピーしました");
+}
 </script>
 
 </body>
