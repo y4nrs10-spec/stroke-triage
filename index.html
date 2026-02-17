@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stroke Triage</title>
+
+<style>
+body{
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+background:#f5f5f7;
+padding:20px;
+}
+.card{
+background:white;
+padding:20px;
+border-radius:16px;
+box-shadow:0 4px 12px rgba(0,0,0,0.08);
+margin-bottom:16px;
+}
+h1{margin-top:0;}
+button{
+padding:12px 16px;
+border-radius:12px;
+border:none;
+font-size:16px;
+cursor:pointer;
+margin-top:12px;
+}
+.primary{background:#007AFF;color:white;}
+.secondary{background:#e5e5ea;}
+.row{margin-bottom:12px;}
+select,input{padding:8px;width:100%;}
+</style>
+</head>
+
+<body>
+
+<div class="card" id="intro">
+<h1>Stroke Triage</h1>
+<p>本アプリは評価補助ツールです。</p>
+<button class="primary" onclick="start()">同意して評価開始</button>
+</div>
+
+<div class="card" id="step1" style="display:none;">
+<h3>基本情報</h3>
+<div class="row">
+<label>ID</label>
+<input id="id">
+</div>
+<div class="row">
+<label>年齢</label>
+<input id="age">
+</div>
+<button class="primary" onclick="go(2)">次へ</button>
+</div>
+
+<div class="card" id="step2" style="display:none;">
+<h3>CPSS</h3>
+<div class="row">
+<select id="cpss">
+<option value="">未入力</option>
+<option value="陽性">陽性</option>
+<option value="陰性">陰性</option>
+</select>
+</div>
+<button class="secondary" onclick="go(1)">戻る</button>
+<button class="primary" onclick="go(3)">次へ</button>
+</div>
+
+<div class="card" id="step3" style="display:none;">
+<h3>共有</h3>
+<button class="secondary" onclick="go(2)">戻る</button>
+<button class="primary" onclick="generate()">共有テキスト生成</button>
+</div>
+
+<div class="card" id="result" style="display:none;">
+<h3>共有テキスト</h3>
+<pre id="output"></pre>
+<button class="secondary" onclick="copy()">コピー</button>
+</div>
+
+<script>
+function start(){
+document.getElementById("intro").style.display="none";
+document.getElementById("step1").style.display="block";
+}
+
+function go(n){
+for(let i=1;i<=3;i++){
+let el=document.getElementById("step"+i);
+if(el) el.style.display=(i===n)?"block":"none";
+}
+document.getElementById("result").style.display="none";
+}
+
+function generate(){
+let id=document.getElementById("id").value;
+let age=document.getElementById("age").value;
+let cpss=document.getElementById("cpss").value;
+
+let text=
+"脳卒中対応記録\n"+
+"ID: "+(id||"—")+"\n"+
+"年齢: "+(age||"—")+"\n"+
+"CPSS: "+(cpss||"—");
+
+document.getElementById("output").textContent=text;
+document.getElementById("result").style.display="block";
+}
+
+function copy(){
+let text=document.getElementById("output").textContent;
+navigator.clipboard.writeText(text);
+alert("コピーしました");
+}
+</script>
+
+</body>
+</html>
