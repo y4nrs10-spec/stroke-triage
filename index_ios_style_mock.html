@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#f2f2f7" />
+  <title>Stroke Triage（iOS風）</title>
+  <style>
+    :root{
+      --bg:#f2f2f7;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --line:rgba(17,24,39,.10);
+      --blue:#0a84ff;
+      --shadow: 0 8px 20px rgba(0,0,0,.06);
+      --radius: 16px;
+      --font: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Sans","Yu Gothic UI","Helvetica Neue",Arial,sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+    .wrap{max-width:520px;margin:0 auto;padding:16px 14px 110px}
+    .tabs{display:flex;gap:8px;overflow:auto;padding:8px 6px 2px;-webkit-overflow-scrolling:touch}
+    .tab{flex:0 0 auto;font-size:12px;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;user-select:none;box-shadow:0 2px 10px rgba(0,0,0,.04);white-space:nowrap}
+    .tab.on{border-color:rgba(10,132,255,.35);background:rgba(10,132,255,.12);color:#0b3a7a}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-top:12px}
+    .card.gray{background:#ededf2;border-color:rgba(17,24,39,.08);box-shadow:none}
+    .hd{padding:14px 14px 10px;font-weight:800;font-size:14px;display:flex;align-items:center;gap:10px}
+    .bd{padding:10px 14px 14px}
+    .row{display:grid;grid-template-columns:86px 1fr;gap:10px;align-items:center;margin-top:10px}
+    .row3{display:grid;grid-template-columns:86px 1fr 1fr;gap:10px;align-items:center;margin-top:10px}
+    .lbl{font-size:13px;font-weight:700}
+    input{width:100%;border:1px solid rgba(17,24,39,.12);background:#fff;border-radius:10px;padding:10px 12px;font-size:14px;outline:none}
+    input::placeholder{color:#9ca3af}
+    input:focus{border-color:rgba(10,132,255,.45);box-shadow:0 0 0 4px rgba(10,132,255,.12)}
+    .seg{display:flex;border:1px solid rgba(17,24,39,.12);background:#e6e6ea;border-radius:999px;padding:2px;gap:2px;overflow:hidden}
+    .seg button{flex:1;border:0;background:transparent;padding:8px 10px;border-radius:999px;font-size:13px;font-weight:800;color:#111827;cursor:pointer}
+    .seg button.on{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+    .pillbtn{display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(17,24,39,.10);background:#fff;border-radius:12px;padding:10px 12px}
+    .pillbtn .left{display:flex;flex-direction:column;gap:2px}
+    .pillbtn .top{font-size:14px;font-weight:800}
+    .pillbtn .sub{font-size:12px;color:var(--blue);font-weight:800}
+    .pillbtn .chev{color:#9ca3af;font-weight:900}
+    .btnSmall{border:0;border-radius:10px;padding:10px 14px;font-weight:900;cursor:pointer}
+    .btnSmall.blue{background:var(--blue);color:#fff}
+    .footer{position:fixed;left:0;right:0;bottom:0;background:rgba(242,242,247,.92);backdrop-filter:blur(12px);border-top:1px solid rgba(17,24,39,.10)}
+    .footerInner{max-width:520px;margin:0 auto;padding:12px 14px;display:flex;gap:10px}
+    .footerInner button{flex:1;border:0;border-radius:14px;padding:14px 14px;font-size:14px;font-weight:900;cursor:pointer}
+    .footerInner .ghost{background:#e6e6ea;color:#6b7280}
+    .footerInner .primary{background:var(--blue);color:#fff}
+    .hide{display:none !important}
+    .badgeMini{font-size:12px;color:#6b7280;margin-left:auto}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="tabs" id="tabs"></div>
+
+    <section class="card" id="basicCard">
+      <div class="hd">基本情報 <span class="badgeMini" id="elapsed">経過 —</span></div>
+      <div class="bd">
+        <div class="row">
+          <div class="lbl">年齢</div>
+          <div style="display:grid;grid-template-columns:1fr 160px;gap:10px;align-items:center">
+            <input id="age" inputmode="numeric" placeholder="例：56" />
+            <div class="seg" role="tablist" aria-label="性別">
+              <button id="sexM" class="on" type="button">男</button>
+              <button id="sexF" type="button">女</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="lbl">最終健在</div>
+          <div style="display:grid;grid-template-columns:1fr 88px;gap:10px;align-items:center">
+            <div class="pillbtn">
+              <div class="left">
+                <div class="top">不明</div>
+                <div class="sub" id="lkwText">不明</div>
+              </div>
+              <div class="chev">›</div>
+            </div>
+            <button class="btnSmall blue" id="lkwUnknown" type="button">不明</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="lbl">発見・発症<br>時刻</div>
+          <div class="pillbtn">
+            <div class="left">
+              <div class="top">未入力</div>
+              <div class="sub" id="discText">未入力</div>
+            </div>
+            <div class="chev">›</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card gray" id="vitalCard">
+      <div class="hd">バイタル</div>
+      <div class="bd">
+        <div class="row3">
+          <div class="lbl">JCS</div>
+          <input placeholder="—" />
+          <div></div>
+        </div>
+
+        <div class="row3">
+          <div class="lbl">GCS</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+            <input placeholder="—" />
+            <input placeholder="—" />
+            <input placeholder="—" />
+          </div>
+          <div></div>
+        </div>
+
+        <div class="row3">
+          <div class="lbl">BP</div>
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center">
+            <input placeholder="—" />
+            <div style="font-weight:900">/</div>
+            <input placeholder="—" />
+          </div>
+          <div style="font-size:13px;font-weight:900">mmHg</div>
+        </div>
+
+        <div class="row3">
+          <div class="lbl">SpO₂</div>
+          <input placeholder="—" />
+          <div style="font-size:13px;font-weight:900">%</div>
+        </div>
+
+        <div class="row3">
+          <div class="lbl">酸素</div>
+          <div style="display:grid;grid-template-columns:1fr auto 1fr auto;gap:8px;align-items:center">
+            <input placeholder="—" />
+            <div style="font-weight:900">L</div>
+            <input placeholder="—" />
+            <div style="font-weight:900">%</div>
+          </div>
+          <div></div>
+        </div>
+
+        <div class="row3">
+          <div class="lbl">HR</div>
+          <div style="display:grid;grid-template-columns:110px auto 1fr;gap:8px;align-items:center">
+            <input placeholder="—" />
+            <div style="font-size:13px;font-weight:900">/分</div>
+            <div class="seg">
+              <button class="on" type="button">SR</button>
+              <button type="button">不整</button>
+            </div>
+          </div>
+          <div></div>
+        </div>
+
+        <div class="row3">
+          <div class="lbl">BS</div>
+          <input placeholder="—" />
+          <div style="font-size:13px;font-weight:900">mg/dl</div>
+        </div>
+
+        <div class="row3">
+          <div class="lbl">BT</div>
+          <input placeholder="—" />
+          <div style="font-size:13px;font-weight:900">℃</div>
+        </div>
+
+        <div class="row3">
+          <div class="lbl">瞳孔</div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;align-items:center">
+            <input placeholder="右 —" />
+            <input placeholder="左 —" />
+          </div>
+          <div style="font-size:13px;font-weight:900">mm</div>
+        </div>
+
+        <div class="row">
+          <div class="lbl">対光<br>反射</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+            <div class="seg"><button class="on" type="button">右+</button><button type="button">右-</button></div>
+            <div class="seg"><button class="on" type="button">左+</button><button type="button">左-</button></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="lbl">認知症</div>
+          <div class="seg">
+            <button class="on" type="button">未入力</button>
+            <button type="button">有り</button>
+            <button type="button">無し</button>
+            <button type="button">指摘</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="footer">
+    <div class="footerInner">
+      <button class="ghost" type="button">戻る</button>
+      <button class="primary" type="button">次へ</button>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const $ = (id)=>document.getElementById(id);
+
+  // simple tabs (visual only)
+  const steps = ["基本情報","６項目","CPSS/ELVO","KPSS","共有"];
+  const tabs = $("tabs");
+  steps.forEach((t,i)=>{
+    const b=document.createElement("div");
+    b.className="tab"+(i===0?" on":"");
+    b.textContent=t;
+    b.addEventListener("click", ()=>{
+      [...tabs.children].forEach(x=>x.classList.remove("on"));
+      b.classList.add("on");
+      // demo: only overview is laid out; keep page stable.
+    });
+    tabs.appendChild(b);
+  });
+
+  // sex segmented
+  $("sexM").addEventListener("click", ()=>{ $("sexM").classList.add("on"); $("sexF").classList.remove("on"); });
+  $("sexF").addEventListener("click", ()=>{ $("sexF").classList.add("on"); $("sexM").classList.remove("on"); });
+
+  // time placeholders (this mock keeps "不明/未入力" like screenshot)
+})();
+</script>
+</body>
+</html>
