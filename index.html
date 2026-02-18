@@ -3,1344 +3,233 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#0ea5e9" />
-  <title>Stroke Triage（Web）</title>
+  <meta name="theme-color" content="#f2f2f7" />
+  <title>Stroke Triage（iOS風）</title>
   <style>
     :root{
-      --bg:#0b1220;
-      --card:#0f172a;
-      --card2:#0b1326;
-      --text:#e5e7eb;
-      --muted:#9ca3af;
-      --line:rgba(255,255,255,.10);
-      --accent:#38bdf8;
-      --accent2:#0ea5e9;
-      --danger:#fb7185;
-      --ok:#34d399;
-      --warn:#fbbf24;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --radius: 18px;
-      --radius2: 14px;
+      --bg:#f2f2f7;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --line:rgba(17,24,39,.10);
+      --blue:#0a84ff;
+      --shadow: 0 8px 20px rgba(0,0,0,.06);
+      --radius: 16px;
       --font: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Sans","Yu Gothic UI","Helvetica Neue",Arial,sans-serif;
-      --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
     }
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:var(--font);
-      background: radial-gradient(1200px 600px at 20% 0%, rgba(56,189,248,.18), transparent 60%),
-                  radial-gradient(900px 500px at 85% 10%, rgba(14,165,233,.15), transparent 60%),
-                  linear-gradient(180deg, #070b14, #050814 40%, #050814);
-      color:var(--text);
-      min-height:100vh;
-    }
-    .wrap{max-width:980px;margin:0 auto;padding:20px 14px 120px}
-    .topbar{
-      position:sticky; top:0; z-index:10;
-      backdrop-filter: blur(10px);
-      background: rgba(5,8,20,.65);
-      border-bottom:1px solid var(--line);
-    }
-    .topbarInner{max-width:980px;margin:0 auto;padding:12px 14px;display:flex;gap:12px;align-items:center;justify-content:space-between}
-    .brand{display:flex;gap:10px;align-items:center}
-    .logo{
-      width:34px;height:34px;border-radius:10px;
-      background: linear-gradient(135deg, rgba(56,189,248,.95), rgba(14,165,233,.95));
-      box-shadow: 0 10px 24px rgba(14,165,233,.25);
-      display:grid;place-items:center;font-weight:800;color:#05202c;
-    }
-    .brandTitle{line-height:1.1}
-    .brandTitle b{display:block;font-size:15px}
-    .brandTitle span{display:block;font-size:12px;color:var(--muted)}
-    .pillRow{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-    .pill{
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      padding:8px 12px;border-radius:999px;
-      color:var(--text);
-      font-size:12px;
-    }
-    .pill b{font-family:var(--mono);font-weight:700}
-    .card{
-      background: linear-gradient(180deg, rgba(15,23,42,.9), rgba(11,19,38,.9));
-      border:1px solid var(--line);
-      box-shadow:var(--shadow);
-      border-radius:var(--radius);
-      overflow:hidden;
-      margin-top:14px;
-    }
-    .card .hd{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;justify-content:space-between}
-    .card .hd h2{margin:0;font-size:15px}
-    .card .bd{padding:14px 16px}
-    .muted{color:var(--muted);font-size:12px;line-height:1.55}
-    .grid{display:grid;gap:12px}
-    @media(min-width:720px){.grid.cols2{grid-template-columns:1fr 1fr}}
-    @media(min-width:900px){.grid.cols3{grid-template-columns:1fr 1fr 1fr}}
-    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
-    input, select, textarea{
-      width:100%;
-      background: rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:12px;
-      padding:12px 12px;
-      color:var(--text);
-      outline:none;
-    }
-    textarea{min-height:84px;resize:vertical}
-    input:focus, select:focus, textarea:focus{border-color: rgba(56,189,248,.65); box-shadow:0 0 0 4px rgba(56,189,248,.18)}
-    .seg{
-      display:flex; gap:8px; flex-wrap:wrap;
-    }
-    .btn{
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.05);
-      color:var(--text);
-      padding:10px 12px;border-radius:12px;
-      cursor:pointer;
-      user-select:none;
-      font-weight:600;
-      font-size:13px;
-      transition: transform .03s ease, background .2s ease, border-color .2s ease;
-    }
-    .btn:active{transform: translateY(1px)}
-    .btn.primary{
-      background: linear-gradient(135deg, rgba(56,189,248,.95), rgba(14,165,233,.95));
-      color:#04202a;border-color:transparent;
-    }
-    .btn.danger{background: rgba(251,113,133,.12); border-color: rgba(251,113,133,.35); color:#fecdd3}
-    .btn.ghost{background: transparent}
-    .btn.on{
-      background: rgba(56,189,248,.14);
-      border-color: rgba(56,189,248,.55);
-      color: #bfefff;
-    }
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .row .spacer{flex:1}
-    .badge{font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background: rgba(255,255,255,.04)}
-    .badge.ok{border-color: rgba(52,211,153,.45);background: rgba(52,211,153,.12)}
-    .badge.warn{border-color: rgba(251,191,36,.45);background: rgba(251,191,36,.12)}
-    .badge.req{border-color: rgba(251,113,133,.45);background: rgba(251,113,133,.12)}
-    .footerbar{
-      position:fixed; left:0; right:0; bottom:0; z-index:20;
-      background: rgba(5,8,20,.78);
-      backdrop-filter: blur(12px);
-      border-top:1px solid var(--line);
-    }
-    .footerInner{max-width:980px;margin:0 auto;padding:12px 14px;display:flex;gap:10px}
-    .footerInner .btn{flex:1;padding:14px 12px;border-radius:16px}
-    .tabs{display:flex;gap:8px;flex-wrap:wrap}
-    .tab{font-size:12px;padding:8px 10px;border-radius:999px;border:1px solid var(--line);background: rgba(255,255,255,.04);cursor:pointer}
-    .tab.on{border-color: rgba(56,189,248,.55);background: rgba(56,189,248,.14)}
+    body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+    .wrap{max-width:520px;margin:0 auto;padding:16px 14px 110px}
+    .tabs{display:flex;gap:8px;overflow:auto;padding:8px 6px 2px;-webkit-overflow-scrolling:touch}
+    .tab{flex:0 0 auto;font-size:12px;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;user-select:none;box-shadow:0 2px 10px rgba(0,0,0,.04);white-space:nowrap}
+    .tab.on{border-color:rgba(10,132,255,.35);background:rgba(10,132,255,.12);color:#0b3a7a}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-top:12px}
+    .card.gray{background:#ededf2;border-color:rgba(17,24,39,.08);box-shadow:none}
+    .hd{padding:14px 14px 10px;font-weight:800;font-size:14px;display:flex;align-items:center;gap:10px}
+    .bd{padding:10px 14px 14px}
+    .row{display:grid;grid-template-columns:86px 1fr;gap:10px;align-items:center;margin-top:10px}
+    .row3{display:grid;grid-template-columns:86px 1fr 1fr;gap:10px;align-items:center;margin-top:10px}
+    .lbl{font-size:13px;font-weight:700}
+    input{width:100%;border:1px solid rgba(17,24,39,.12);background:#fff;border-radius:10px;padding:10px 12px;font-size:14px;outline:none}
+    input::placeholder{color:#9ca3af}
+    input:focus{border-color:rgba(10,132,255,.45);box-shadow:0 0 0 4px rgba(10,132,255,.12)}
+    .seg{display:flex;border:1px solid rgba(17,24,39,.12);background:#e6e6ea;border-radius:999px;padding:2px;gap:2px;overflow:hidden}
+    .seg button{flex:1;border:0;background:transparent;padding:8px 10px;border-radius:999px;font-size:13px;font-weight:800;color:#111827;cursor:pointer}
+    .seg button.on{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+    .pillbtn{display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(17,24,39,.10);background:#fff;border-radius:12px;padding:10px 12px}
+    .pillbtn .left{display:flex;flex-direction:column;gap:2px}
+    .pillbtn .top{font-size:14px;font-weight:800}
+    .pillbtn .sub{font-size:12px;color:var(--blue);font-weight:800}
+    .pillbtn .chev{color:#9ca3af;font-weight:900}
+    .btnSmall{border:0;border-radius:10px;padding:10px 14px;font-weight:900;cursor:pointer}
+    .btnSmall.blue{background:var(--blue);color:#fff}
+    .footer{position:fixed;left:0;right:0;bottom:0;background:rgba(242,242,247,.92);backdrop-filter:blur(12px);border-top:1px solid rgba(17,24,39,.10)}
+    .footerInner{max-width:520px;margin:0 auto;padding:12px 14px;display:flex;gap:10px}
+    .footerInner button{flex:1;border:0;border-radius:14px;padding:14px 14px;font-size:14px;font-weight:900;cursor:pointer}
+    .footerInner .ghost{background:#e6e6ea;color:#6b7280}
+    .footerInner .primary{background:var(--blue);color:#fff}
     .hide{display:none !important}
-    .summaryBox{
-      white-space:pre-wrap;
-      font-family: var(--font);
-      background: rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:14px;
-      padding:12px;
-      line-height:1.5;
-      font-size:13px;
-    }
-    .histItem{
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.03);
-      border-radius:14px;
-      padding:12px;
-      display:flex; gap:10px; align-items:flex-start;
-      cursor:pointer;
-    }
-    .histItem:hover{border-color: rgba(56,189,248,.35)}
-    .histTime{font-family:var(--mono);font-size:12px;color:var(--muted)}
-    .toast{
-      position:fixed; top:16px; left:50%; transform:translateX(-50%);
-      background: rgba(15,23,42,.92);
-      border:1px solid rgba(255,255,255,.14);
-      padding:10px 14px;border-radius:999px;
-      box-shadow: var(--shadow);
-      z-index:999;
-      opacity:0; pointer-events:none;
-      transition: opacity .18s ease, transform .18s ease;
-    }
-    .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
-    .modalBackdrop{
-      position:fixed; inset:0; background: rgba(0,0,0,.55);
-      display:none; align-items:center; justify-content:center; padding:16px;
-      z-index:999;
-    }
-    .modalBackdrop.show{display:flex}
-    .modal{
-      width:min(860px, 100%);
-      background: linear-gradient(180deg, rgba(15,23,42,.95), rgba(11,19,38,.95));
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:18px;
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .modal .hd{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;justify-content:space-between}
-    .modal .bd{padding:14px 16px}
-    .hr{height:1px;background:var(--line);margin:12px 0}
-    .small{font-size:12px;color:var(--muted)}
+    .badgeMini{font-size:12px;color:#6b7280;margin-left:auto}
   </style>
 </head>
-
 <body>
-  <div class="topbar">
-    <div class="topbarInner">
-      <div class="brand">
-        <div class="logo">ST</div>
-        <div class="brandTitle">
-          <b>Stroke Triage（Web）</b>
-          <span>入力 → まとめ → コピー/共有 → 履歴</span>
-        </div>
-      </div>
-      <div class="pillRow">
-        <div class="pill">保存: <b>端末内のみ</b></div>
-        <div class="pill">通信: <b>なし</b></div>
-      </div>
-    </div>
-  </div>
-
   <div class="wrap">
+    <div class="tabs" id="tabs"></div>
 
-    <!-- Intro -->
-    <section class="card" id="introCard">
-      <div class="hd">
-        <h2>本アプリについて（テスト運用版）</h2>
-        <span class="badge">v1</span>
-      </div>
-      <div class="bd">
-        <div class="muted">
-          <p>本ツールは、脳卒中初期対応における評価・記録・共有を補助するための入力支援です。実地での使用感や入力性、共有文面の妥当性の確認を目的としてテスト運用しています。</p>
-          <p><b>ご利用にあたって</b><br>
-          ・本ツールは医療判断の代替ではありません。院内手順・ガイドラインに従ってください。<br>
-          ・緊急時は入力を待たずに患者対応と必要な連絡を優先してください。<br>
-          ・入力値（時刻・スコア等）は可能な範囲で根拠を確認してください。<br>
-          ・個人情報の取り扱いに注意してください（端末管理・共有先・スクリーンショット等）。</p>
-          <p><b>免責事項</b><br>
-          本ツールの利用により生じたいかなる損害についても、作成者は責任を負いません。表示内容は正確性・完全性を保証するものではなく、ユーザの自己責任において利用してください。</p>
-        </div>
-      </div>
-      <div class="bd">
-        <button class="btn primary" id="startBtn" style="width:100%;padding:16px;border-radius:18px">同意して評価開始</button>
-      </div>
-
+    <section class="card" id="basicCard">
+      <div class="hd">基本情報 <span class="badgeMini" id="elapsed">経過 —</span></div>
       <div class="bd">
         <div class="row">
-          <h2 style="margin:0;font-size:15px">履歴</h2>
-          <div class="spacer"></div>
-          <button class="btn danger" id="clearHistoryBtn">全削除</button>
-        </div>
-        <div class="small" style="margin-top:6px">※トップ画面では最新10件までを表示します。</div>
-        <div id="historyList" class="grid" style="margin-top:10px"></div>
-        <div id="historyEmpty" class="muted" style="margin-top:10px">履歴はまだありません</div>
-      </div>
-    </section>
-
-    <!-- App -->
-    <section class="card hide" id="appCard">
-      <div class="hd">
-        <h2>入力画面</h2>
-        <div class="tabs" id="tabs"></div>
-      </div>
-
-      <div class="bd" id="step_overview">
-        <div class="row" style="margin-bottom:10px">
-          <span class="badge" id="badge_basic">基本情報</span>
-          <span class="badge" id="badge_six">6項目</span>
-          <span class="badge" id="badge_cpss">CPSS/ELVO</span>
-          <span class="badge" id="badge_kpss">KPSS</span>
-          <span class="badge" id="badge_sum">共有</span>
-          <div class="spacer"></div>
-          <span class="badge" id="elapsedBadge">経過: —</span>
-        </div>
-
-        <div class="card" style="margin-top:0">
-          <div class="hd"><h2>基本情報</h2></div>
-          <div class="bd grid cols2">
-            <div>
-              <label>ID</label>
-              <input id="patientID" inputmode="numeric" placeholder="例：123456" />
-            </div>
-            <div>
-              <label>年齢</label>
-              <input id="age" inputmode="numeric" placeholder="例：56" />
-            </div>
-            <div>
-              <label>性別</label>
-              <div class="seg">
-                <button class="btn" data-sex="男">男</button>
-                <button class="btn" data-sex="女">女</button>
-              </div>
-            </div>
-            <div>
-              <label>最終健在</label>
-              <input id="lkw" type="datetime-local" />
-              <div class="row" style="margin-top:8px">
-                <button class="btn" id="lkwUnknown">不明</button>
-                <div class="spacer"></div>
-                <span class="small" id="lkwText">—</span>
-              </div>
-            </div>
-            <div>
-              <label>発見・発症時刻</label>
-              <input id="disc" type="datetime-local" />
-              <div class="row" style="margin-top:8px">
-                <button class="btn" id="discClear">消す</button>
-                <div class="spacer"></div>
-                <span class="small" id="discText">—</span>
-              </div>
-            </div>
-            <div>
-              <label>認知症</label>
-              <select id="dementia">
-                <option value="">未入力</option>
-                <option value="有り">有り</option>
-                <option value="無し">無し</option>
-                <option value="指摘">指摘</option>
-              </select>
-            </div>
-            <div style="grid-column:1/-1">
-              <label>抗凝固薬・抗血小板薬内服</label>
-              <div class="seg">
-                <button class="btn" data-anticoag="">未入力</button>
-                <button class="btn" data-anticoag="有り">有り</button>
-                <button class="btn" data-anticoag="無し">無し</button>
-              </div>
-              <div id="anticoagNameWrap" class="hide" style="margin-top:8px">
-                <input id="anticoagName" placeholder="薬品名を入力" />
-              </div>
-            </div>
-            <div style="grid-column:1/-1">
-              <label>既往歴（複数）</label>
-              <div class="seg" id="pastBtns"></div>
-              <div style="margin-top:8px">
-                <label>その他の既往歴（自由入力）</label>
-                <textarea id="otherPast" placeholder="例：喘息、甲状腺疾患 など"></textarea>
-              </div>
+          <div class="lbl">年齢</div>
+          <div style="display:grid;grid-template-columns:1fr 160px;gap:10px;align-items:center">
+            <input id="age" inputmode="numeric" placeholder="例：56" />
+            <div class="seg" role="tablist" aria-label="性別">
+              <button id="sexM" class="on" type="button">男</button>
+              <button id="sexF" type="button">女</button>
             </div>
           </div>
         </div>
 
-        <div class="card">
-          <div class="hd"><h2>バイタル</h2></div>
-          <div class="bd grid cols3">
-            <div><label>JCS</label><input id="jcs" placeholder="—" /></div>
-            <div><label>GCS E</label><input id="gcsE" inputmode="numeric" placeholder="—" /></div>
-            <div><label>GCS V</label><input id="gcsV" inputmode="numeric" placeholder="—" /></div>
-            <div><label>GCS M</label><input id="gcsM" inputmode="numeric" placeholder="—" /></div>
-            <div><label>BP（収縮）</label><input id="bpSys" inputmode="numeric" placeholder="—" /></div>
-            <div><label>BP（拡張）</label><input id="bpDia" inputmode="numeric" placeholder="—" /></div>
-            <div><label>SpO₂（%）</label><input id="spo2" inputmode="numeric" placeholder="—" /></div>
-            <div><label>酸素（L）</label><input id="o2flow" inputmode="decimal" placeholder="—" /></div>
-            <div><label>酸素（%）</label><input id="o2pct" inputmode="numeric" placeholder="—" /></div>
-            <div><label>HR（/分）</label><input id="hr" inputmode="numeric" placeholder="—" /></div>
-            <div>
-              <label>リズム</label>
-              <div class="seg">
-                <button class="btn" data-rhythm="SR">SR</button>
-                <button class="btn" data-rhythm="不整">不整</button>
+        <div class="row">
+          <div class="lbl">最終健在</div>
+          <div style="display:grid;grid-template-columns:1fr 88px;gap:10px;align-items:center">
+            <div class="pillbtn">
+              <div class="left">
+                <div class="top">不明</div>
+                <div class="sub" id="lkwText">不明</div>
               </div>
-              <div id="irregWrap" class="hide" style="margin-top:8px">
-                <div class="seg">
-                  <button class="btn" data-irreg="Af">Af</button>
-                  <button class="btn" data-irreg="PVC">PVC</button>
-                  <button class="btn" data-irreg="PAC">PAC</button>
-                </div>
-              </div>
+              <div class="chev">›</div>
             </div>
-            <div><label>BS（mg/dl）</label><input id="bs" inputmode="decimal" placeholder="—" /></div>
-            <div><label>BT（℃）</label><input id="bt" inputmode="decimal" placeholder="—" /></div>
-            <div><label>瞳孔 右（mm）</label><input id="pupilR" inputmode="decimal" placeholder="—" /></div>
-            <div><label>瞳孔 左（mm）</label><input id="pupilL" inputmode="decimal" placeholder="—" /></div>
-            <div>
-              <label>対光反射 右</label>
-              <select id="lightR">
-                <option value="">未</option><option value="+">+</option><option value="-">-</option>
-              </select>
-            </div>
-            <div>
-              <label>対光反射 左</label>
-              <select id="lightL">
-                <option value="">未</option><option value="+">+</option><option value="-">-</option>
-              </select>
-            </div>
-          </div>
-          <div class="bd">
-            <div id="timeWarn" class="hide" style="color:var(--warn);font-size:12px">
-              ⚠ 発見時刻が最終健在より前になっています
-            </div>
+            <button class="btnSmall blue" id="lkwUnknown" type="button">不明</button>
           </div>
         </div>
-      </div>
 
-      <div class="bd hide" id="step_six">
-        <div class="row" style="margin-bottom:10px">
-          <h2 style="margin:0;font-size:15px">6項目（チェック）</h2>
-          <div class="spacer"></div>
-          <span class="badge" id="badgeSixState">未入力</span>
-        </div>
-        <div class="grid" id="sixGrid"></div>
-      </div>
-
-      <div class="bd hide" id="step_cpss">
-        <div class="row" style="margin-bottom:10px">
-          <h2 style="margin:0;font-size:15px">CPSS / ELVO</h2>
-          <div class="spacer"></div>
-          <span class="badge" id="badgeCpssState">未入力</span>
-        </div>
-
-        <div class="card" style="margin-top:0">
-          <div class="hd"><h2>CPSS</h2><span class="badge" id="cpssJudge">未入力</span></div>
-          <div class="bd grid cols2" id="cpssRows"></div>
-        </div>
-
-        <div class="card">
-          <div class="hd"><h2>ELVO（緊急大血管閉塞）スクリーン</h2></div>
-          <div class="bd grid" id="elvoRows"></div>
-        </div>
-      </div>
-
-      <div class="bd hide" id="step_kpss">
-        <div class="row" style="margin-bottom:10px">
-          <h2 style="margin:0;font-size:15px">KPSS</h2>
-          <div class="spacer"></div>
-          <span class="badge" id="badgeKpssState">未入力</span>
-          <span class="badge" id="kpssTotal">合計: —</span>
-        </div>
-        <div class="grid" id="kpssBlocks"></div>
-      </div>
-
-      <div class="bd hide" id="step_summary">
-        <div class="row" style="margin-bottom:10px">
-          <h2 style="margin:0;font-size:15px">共有用まとめ</h2>
-          <div class="spacer"></div>
-          <span class="badge" id="summaryState">—</span>
-        </div>
-
-        <div class="summaryBox" id="summaryBox"></div>
-
-        <div class="card">
-          <div class="hd"><h2>MRI 確認チェックリスト</h2></div>
-          <div class="bd grid cols2" id="mriChecks"></div>
-        </div>
-
-        <div class="muted" style="margin-top:10px">
-          ⚠「新規評価」を押すと履歴に残りません。履歴を残す場合は先に「コピー」または「共有」を押してください。
+        <div class="row">
+          <div class="lbl">発見・発症<br>時刻</div>
+          <div class="pillbtn">
+            <div class="left">
+              <div class="top">未入力</div>
+              <div class="sub" id="discText">未入力</div>
+            </div>
+            <div class="chev">›</div>
+          </div>
         </div>
       </div>
     </section>
 
+    <section class="card gray" id="vitalCard">
+      <div class="hd">バイタル</div>
+      <div class="bd">
+        <div class="row3">
+          <div class="lbl">JCS</div>
+          <input placeholder="—" />
+          <div></div>
+        </div>
+
+        <div class="row3">
+          <div class="lbl">GCS</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+            <input placeholder="—" />
+            <input placeholder="—" />
+            <input placeholder="—" />
+          </div>
+          <div></div>
+        </div>
+
+        <div class="row3">
+          <div class="lbl">BP</div>
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center">
+            <input placeholder="—" />
+            <div style="font-weight:900">/</div>
+            <input placeholder="—" />
+          </div>
+          <div style="font-size:13px;font-weight:900">mmHg</div>
+        </div>
+
+        <div class="row3">
+          <div class="lbl">SpO₂</div>
+          <input placeholder="—" />
+          <div style="font-size:13px;font-weight:900">%</div>
+        </div>
+
+        <div class="row3">
+          <div class="lbl">酸素</div>
+          <div style="display:grid;grid-template-columns:1fr auto 1fr auto;gap:8px;align-items:center">
+            <input placeholder="—" />
+            <div style="font-weight:900">L</div>
+            <input placeholder="—" />
+            <div style="font-weight:900">%</div>
+          </div>
+          <div></div>
+        </div>
+
+        <div class="row3">
+          <div class="lbl">HR</div>
+          <div style="display:grid;grid-template-columns:110px auto 1fr;gap:8px;align-items:center">
+            <input placeholder="—" />
+            <div style="font-size:13px;font-weight:900">/分</div>
+            <div class="seg">
+              <button class="on" type="button">SR</button>
+              <button type="button">不整</button>
+            </div>
+          </div>
+          <div></div>
+        </div>
+
+        <div class="row3">
+          <div class="lbl">BS</div>
+          <input placeholder="—" />
+          <div style="font-size:13px;font-weight:900">mg/dl</div>
+        </div>
+
+        <div class="row3">
+          <div class="lbl">BT</div>
+          <input placeholder="—" />
+          <div style="font-size:13px;font-weight:900">℃</div>
+        </div>
+
+        <div class="row3">
+          <div class="lbl">瞳孔</div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;align-items:center">
+            <input placeholder="右 —" />
+            <input placeholder="左 —" />
+          </div>
+          <div style="font-size:13px;font-weight:900">mm</div>
+        </div>
+
+        <div class="row">
+          <div class="lbl">対光<br>反射</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+            <div class="seg"><button class="on" type="button">右+</button><button type="button">右-</button></div>
+            <div class="seg"><button class="on" type="button">左+</button><button type="button">左-</button></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="lbl">認知症</div>
+          <div class="seg">
+            <button class="on" type="button">未入力</button>
+            <button type="button">有り</button>
+            <button type="button">無し</button>
+            <button type="button">指摘</button>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 
-  <div class="footerbar hide" id="footerbar">
+  <div class="footer">
     <div class="footerInner">
-      <button class="btn" id="backBtn">戻る</button>
-      <button class="btn primary" id="nextBtn">次へ</button>
-    </div>
-  </div>
-
-  <div class="toast" id="toast">保存しました</div>
-
-  <div class="modalBackdrop" id="modal">
-    <div class="modal">
-      <div class="hd">
-        <div>
-          <div style="font-weight:800">履歴詳細</div>
-          <div class="small" id="modalTime">—</div>
-        </div>
-        <button class="btn" id="closeModal">閉じる</button>
-      </div>
-      <div class="bd">
-        <div class="summaryBox" id="modalText"></div>
-        <div class="hr"></div>
-        <div class="row">
-          <button class="btn" id="copyHist">コピー</button>
-          <button class="btn danger" id="deleteHist">削除</button>
-          <div class="spacer"></div>
-          <button class="btn" id="shareHist">共有</button>
-        </div>
-      </div>
+      <button class="ghost" type="button">戻る</button>
+      <button class="primary" type="button">次へ</button>
     </div>
   </div>
 
 <script>
 (() => {
-  // ---- State ----
-  const state = {
-    startedAt: null, // Date
-    stepIndex: 0,
-    steps: ["overview","six","cpss","kpss","summary"],
-    sex: "男",
-    record: {
-      patientID:"", age:"", dementia:"", anticoag:"", anticoagName:"",
-      past: new Set(), otherPast:"",
-      lkw:"", disc:"",
-      jcs:"", gcsE:"", gcsV:"", gcsM:"",
-      bpSys:"", bpDia:"", spo2:"", o2flow:"", o2pct:"",
-      hr:"", rhythm:"SR", irreg:"",
-      bs:"", bt:"",
-      pupilR:"", pupilL:"", lightR:"", lightL:"",
-      six: { pulse:null, gaze:null, neglect:null, hemianopia:null, aphasia:null, hemiparesis:null },
-      cpss: { face:null, faceSide:"右", arm:null, armSide:"右", speech:null },
-      elvo: { gaze:null, gazeDir:"右", naming:null, fingers:null },
-      kpss: { arousal:null, question:null, uR:null, uL:null, lR:null, lL:null, lang:null },
-      mri: { metal:false, wig:false, powder:false, pacemaker:false, denture:false, hearing:false, patch:false },
-    }
-  };
+  const $ = (id)=>document.getElementById(id);
 
-  // ---- Helpers ----
-  const $ = (id) => document.getElementById(id);
-  const fmt2 = (n) => String(n).padStart(2,"0");
-  const nowISOForLocal = () => {
-    const d = new Date();
-    const tz = d.getTimezoneOffset()*60000;
-    return new Date(d - tz).toISOString().slice(0,16);
-  };
-  const formatShort = (d) => {
-    const dt = new Date(d);
-    return `${dt.getMonth()+1}/${dt.getDate()} ${fmt2(dt.getHours())}:${fmt2(dt.getMinutes())}`;
-  };
-  const formatHistory = (d) => {
-    const dt = new Date(d);
-    return `${dt.getFullYear()}-${dt.getMonth()+1}-${dt.getDate()} ${fmt2(dt.getHours())}:${fmt2(dt.getMinutes())}`;
-  };
-  const elapsedMinutes = () => {
-    const {lkw, disc} = state.record;
-    if(!lkw || !disc) return null;
-    const a = new Date(lkw).getTime();
-    const b = new Date(disc).getTime();
-    return Math.floor((b - a)/60000);
-  };
-  const formatElapsed = (min) => {
-    const abs = Math.abs(min);
-    const h = Math.floor(abs/60);
-    const m = abs%60;
-    return h>0 ? `${h}時間${m}分` : `${m}分`;
-  };
-
-  // ---- History store ----
-  const KEY = "strokeTriageHistory_v1";
-  const loadHist = () => {
-    try{
-      const raw = localStorage.getItem(KEY);
-      if(!raw) return [];
-      const arr = JSON.parse(raw);
-      if(!Array.isArray(arr)) return [];
-      return arr;
-    }catch{ return []; }
-  };
-  const saveHist = (arr) => localStorage.setItem(KEY, JSON.stringify(arr));
-  const addHist = (text, atDate) => {
-    const arr = loadHist();
-    arr.unshift({ id: crypto.randomUUID(), createdAt: (atDate||new Date()).toISOString(), text });
-    saveHist(arr);
-  };
-  const delHist = (id) => {
-    const arr = loadHist().filter(x => x.id !== id);
-    saveHist(arr);
-  };
-  const clearHist = () => saveHist([]);
-
-  // ---- UI: Intro history ----
-  const renderIntroHistory = () => {
-    const list = $("historyList");
-    list.innerHTML = "";
-    const arr = loadHist();
-    $("historyEmpty").classList.toggle("hide", arr.length !== 0);
-    $("clearHistoryBtn").disabled = arr.length===0;
-    const top10 = arr.slice(0,10);
-    top10.forEach(item => {
-      const div = document.createElement("div");
-      div.className = "histItem";
-      div.innerHTML = `
-        <div>
-          <div class="histTime">${formatHistory(item.createdAt)}</div>
-          <div class="small" style="margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">
-            ${escapeHTML(firstLine(item.text))}
-          </div>
-        </div>
-        <div class="spacer"></div>
-        <button class="btn danger" data-del="${item.id}">削除</button>
-      `;
-      div.addEventListener("click", (e) => {
-        const btn = e.target.closest("button[data-del]");
-        if(btn){
-          e.stopPropagation();
-          delHist(btn.dataset.del);
-          renderIntroHistory();
-          return;
-        }
-        openModal(item.id);
-      });
-      list.appendChild(div);
+  // simple tabs (visual only)
+  const steps = ["基本情報","６項目","CPSS/ELVO","KPSS","共有"];
+  const tabs = $("tabs");
+  steps.forEach((t,i)=>{
+    const b=document.createElement("div");
+    b.className="tab"+(i===0?" on":"");
+    b.textContent=t;
+    b.addEventListener("click", ()=>{
+      [...tabs.children].forEach(x=>x.classList.remove("on"));
+      b.classList.add("on");
+      // demo: only overview is laid out; keep page stable.
     });
-  };
-
-  const firstLine = (t) => (t||"").split("\n").filter(Boolean)[0] || "(空)";
-  const escapeHTML = (s) => (s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-
-  // ---- Steps tabs ----
-  const stepTitles = {
-    overview:"基本情報",
-    six:"６項目",
-    cpss:"CPSS/ELVO",
-    kpss:"KPSS",
-    summary:"共有"
-  };
-  const buildTabs = () => {
-    const tabs = $("tabs");
-    tabs.innerHTML = "";
-    state.steps.forEach((k, idx) => {
-      const b = document.createElement("div");
-      b.className = "tab" + (idx===state.stepIndex ? " on" : "");
-      b.textContent = stepTitles[k];
-      b.addEventListener("click", () => { state.stepIndex = idx; syncStep(); });
-      tabs.appendChild(b);
-    });
-  };
-
-  const syncTabs = () => {
-    [...$("tabs").children].forEach((el, i) => el.classList.toggle("on", i===state.stepIndex));
-  };
-
-  // ---- Status badges ----
-  const inputState = (vals) => {
-    const filled = vals.filter(v => v !== null && v !== undefined && v !== "").length;
-    if(filled===0) return "required";
-    if(filled===vals.length) return "ok";
-    return "partial";
-  };
-  const setBadge = (el, st) => {
-    el.classList.remove("ok","warn","req");
-    if(st==="ok"){ el.classList.add("ok"); el.textContent="入力済み"; }
-    else if(st==="partial"){ el.classList.add("warn"); el.textContent="一部未入力"; }
-    else { el.classList.add("req"); el.textContent="未入力"; }
-  };
-
-  // ---- Build Six items ----
-  const sixDefs = [
-    ["pulse","脈不整"],
-    ["gaze","共同偏視"],
-    ["neglect","半側空間無視"],
-    ["aphasia","失語"],
-    ["hemianopia","半盲"],
-    ["hemiparesis","片麻痺"],
-  ];
-  const renderSix = () => {
-    const grid = $("sixGrid");
-    grid.innerHTML = "";
-    sixDefs.forEach(([key, label]) => {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <div class="hd"><h2>${label}</h2></div>
-        <div class="bd">
-          <div class="seg">
-            <button class="btn" data-six="${key}" data-val="0">なし</button>
-            <button class="btn" data-six="${key}" data-val="1">あり</button>
-            <button class="btn" data-six="${key}" data-val="unset">未入力</button>
-          </div>
-        </div>
-      `;
-      card.addEventListener("click", (e) => {
-        const b = e.target.closest("button[data-six]");
-        if(!b) return;
-        const v = b.dataset.val;
-        state.record.six[key] = (v==="unset") ? null : Number(v);
-        syncSixButtons();
-        syncAll();
-      });
-      grid.appendChild(card);
-    });
-    syncSixButtons();
-  };
-  const syncSixButtons = () => {
-    document.querySelectorAll("button[data-six]").forEach(b => {
-      const key = b.dataset.six;
-      const v = b.dataset.val;
-      const cur = state.record.six[key];
-      const on = (v==="unset") ? (cur===null) : (cur===Number(v));
-      b.classList.toggle("on", on);
-    });
-  };
-
-  // ---- CPSS / ELVO ----
-  const renderCPSS = () => {
-    const wrap = $("cpssRows");
-    wrap.innerHTML = "";
-    const rows = [
-      ["face","顔面の下垂", true],
-      ["arm","上肢の動揺", true],
-      ["speech","言語", false],
-    ];
-    rows.forEach(([k, title, hasSide]) => {
-      const div = document.createElement("div");
-      div.className = "card";
-      div.style.marginTop = "0";
-      div.innerHTML = `
-        <div class="hd"><h2>${title}</h2></div>
-        <div class="bd">
-          <div class="seg">
-            <button class="btn" data-cpss="${k}" data-val="0">正常</button>
-            <button class="btn" data-cpss="${k}" data-val="1">異常</button>
-            <button class="btn" data-cpss="${k}" data-val="unset">未入力</button>
-          </div>
-          <div class="seg ${hasSide ? "" : "hide"}" style="margin-top:10px" id="side_${k}">
-            <button class="btn" data-side="${k}" data-val="右">右</button>
-            <button class="btn" data-side="${k}" data-val="左">左</button>
-          </div>
-        </div>
-      `;
-      div.addEventListener("click",(e)=>{
-        const b = e.target.closest("button[data-cpss],button[data-side]");
-        if(!b) return;
-        if(b.dataset.cpss){
-          const val = b.dataset.val;
-          if(val==="unset"){
-            state.record.cpss[k]=null;
-          }else{
-            state.record.cpss[k]=Number(val);
-            if(hasSide && Number(val)===1){
-              const sideKey = (k==="face") ? "faceSide" : (k==="arm" ? "armSide" : "");
-              if(sideKey && !state.record.cpss[sideKey]) state.record.cpss[sideKey]="右";
-            }
-          }
-        }else{
-          const kk = b.dataset.side;
-          if(kk==="face") state.record.cpss.faceSide=b.dataset.val;
-          if(kk==="arm") state.record.cpss.armSide=b.dataset.val;
-        }
-        syncCPSSButtons();
-        syncAll();
-      });
-      wrap.appendChild(div);
-    });
-
-    const elvo = $("elvoRows");
-    elvo.innerHTML = "";
-    const elvoDefs = [
-      ["gaze", "眼球位置", ["正中","共同偏視"], ["右","左","内下方"]],
-      ["naming","物品呼称", ["できる","できない"], null],
-      ["fingers","指の数", ["できる","できない"], null],
-    ];
-    elvoDefs.forEach(([k,title,labels,dir])=>{
-      const div = document.createElement("div");
-      div.className = "card";
-      div.innerHTML = `
-        <div class="hd"><h2>${title}</h2></div>
-        <div class="bd">
-          <div class="seg">
-            <button class="btn" data-elvo="${k}" data-val="0">${labels[0]}</button>
-            <button class="btn" data-elvo="${k}" data-val="1">${labels[1]}</button>
-            <button class="btn" data-elvo="${k}" data-val="unset">未入力</button>
-          </div>
-          <div class="seg ${dir ? "" : "hide"}" style="margin-top:10px" id="elvoDir_${k}">
-            ${(dir||[]).map(x=>`<button class="btn" data-eldir="${k}" data-val="${x}">${x}</button>`).join("")}
-          </div>
-        </div>
-      `;
-      div.addEventListener("click",(e)=>{
-        const b = e.target.closest("button[data-elvo],button[data-eldir]");
-        if(!b) return;
-        if(b.dataset.elvo){
-          const val = b.dataset.val;
-          if(val==="unset"){ state.record.elvo[k]=null; }
-          else{ state.record.elvo[k]=Number(val); }
-        }else{
-          state.record.elvo.gazeDir = b.dataset.val;
-        }
-        syncCPSSButtons();
-        syncAll();
-      });
-      elvo.appendChild(div);
-    });
-
-    syncCPSSButtons();
-  };
-
-  const syncCPSSButtons = () => {
-    document.querySelectorAll("button[data-cpss]").forEach(b=>{
-      const k=b.dataset.cpss, v=b.dataset.val;
-      const cur = state.record.cpss[k];
-      const on = (v==="unset") ? (cur===null) : (cur===Number(v));
-      b.classList.toggle("on", on);
-    });
-    // side visibility
-    ["face","arm"].forEach(k=>{
-      const show = state.record.cpss[k]===1;
-      $("side_"+k).classList.toggle("hide", !show);
-      document.querySelectorAll(`button[data-side="${k}"]`).forEach(bb=>{
-        const cur = (k==="face") ? state.record.cpss.faceSide : state.record.cpss.armSide;
-        bb.classList.toggle("on", bb.dataset.val===cur);
-      });
-    });
-
-    document.querySelectorAll("button[data-elvo]").forEach(b=>{
-      const k=b.dataset.elvo, v=b.dataset.val;
-      const cur = state.record.elvo[k];
-      const on = (v==="unset") ? (cur===null) : (cur===Number(v));
-      b.classList.toggle("on", on);
-    });
-    const showDir = state.record.elvo.gaze===1;
-    $("elvoDir_gaze").classList.toggle("hide", !showDir);
-    document.querySelectorAll(`button[data-eldir="gaze"]`).forEach(bb=>{
-      bb.classList.toggle("on", bb.dataset.val===state.record.elvo.gazeDir);
-    });
-  };
-
-  // ---- KPSS ----
-  const kpssBlocksDef = [
-    ["arousal","意識水準", ["０＝完全覚醒","１＝刺激をすると覚醒する","２＝完全に無反応"]],
-    ["question","意識障害（質問）", ["０＝正解","１＝不正解"]],
-    ["uR","上肢 右", ["０＝保持できる","１＝下垂する","２＝挙上不可"]],
-    ["uL","上肢 左", ["０＝保持できる","１＝下垂する","２＝挙上不可"]],
-    ["lR","下肢 右", ["０＝保持できる","１＝下垂する","２＝挙上不可"]],
-    ["lL","下肢 左", ["０＝保持できる","１＝下垂する","２＝挙上不可"]],
-    ["lang","言語", ["０＝正確に繰り返せる","１＝不明瞭/異常","２＝無言/理解不能"]],
-  ];
-  const renderKPSS = () => {
-    const wrap = $("kpssBlocks");
-    wrap.innerHTML = "";
-    kpssBlocksDef.forEach(([k,title,labels])=>{
-      const div = document.createElement("div");
-      div.className = "card";
-      div.innerHTML = `
-        <div class="hd"><h2>${title}</h2></div>
-        <div class="bd">
-          <div class="seg">
-            ${labels.map((t,i)=>`<button class="btn" data-kpss="${k}" data-val="${i}">${t}</button>`).join("")}
-            <button class="btn" data-kpss="${k}" data-val="unset">未入力</button>
-          </div>
-        </div>
-      `;
-      div.addEventListener("click",(e)=>{
-        const b = e.target.closest("button[data-kpss]");
-        if(!b) return;
-        const v=b.dataset.val;
-        state.record.kpss[k] = (v==="unset") ? null : Number(v);
-        syncKPSSButtons();
-        syncAll();
-      });
-      wrap.appendChild(div);
-    });
-    syncKPSSButtons();
-  };
-  const syncKPSSButtons = () => {
-    document.querySelectorAll("button[data-kpss]").forEach(b=>{
-      const k=b.dataset.kpss, v=b.dataset.val;
-      const cur = state.record.kpss[k];
-      const on = (v==="unset") ? (cur===null) : (cur===Number(v));
-      b.classList.toggle("on", on);
-    });
-  };
-  const kpssScore = () => {
-    const r = state.record.kpss;
-    const keys = ["arousal","question","uR","uL","lR","lL","lang"];
-    if(keys.some(k=>r[k]===null)) return null;
-    return keys.reduce((s,k)=>s + Number(r[k]), 0);
-  };
-
-  // ---- MRI ----
-  const renderMRI = () => {
-    const wrap = $("mriChecks");
-    wrap.innerHTML = "";
-    const defs = [
-      ["metal","金属"],
-      ["wig","かつら"],
-      ["powder","頭髪パウダー"],
-      ["pacemaker","ペースメーカー等"],
-      ["denture","入れ歯"],
-      ["hearing","補聴器"],
-      ["patch","貼付薬"],
-    ];
-    defs.forEach(([k,label])=>{
-      const div=document.createElement("div");
-      div.className="row";
-      div.innerHTML=`
-        <button class="btn ${state.record.mri[k] ? "on":""}" data-mri="${k}">${label}</button>
-      `;
-      div.addEventListener("click",(e)=>{
-        const b=e.target.closest("button[data-mri]");
-        if(!b) return;
-        const kk=b.dataset.mri;
-        state.record.mri[kk]=!state.record.mri[kk];
-        b.classList.toggle("on", state.record.mri[kk]);
-      });
-      wrap.appendChild(div);
-    });
-  };
-
-  // ---- Summary text ----
-  const cpssJudgeText = () => {
-    const c = state.record.cpss;
-    if(c.face===null && c.arm===null && c.speech===null) return "未入力";
-    if([c.face,c.arm,c.speech].some(v=>v===null)) return "一部未入力";
-    const positive = (c.face===1)||(c.arm===1)||(c.speech===1);
-    return positive ? "陽性" : "陰性";
-  };
-
-  const summaryText = () => {
-    const r = state.record;
-    const timeStr = (iso) => iso ? formatShort(iso) : "不明";
-    const el = elapsedMinutes();
-    const elapsed = (el===null) ? "—" : formatElapsed(el);
-
-    const cpssParts = [
-      r.cpss.face===null ? "顔面: —" : (r.cpss.face===0 ? "顔面: 正常" : `顔面: 異常(${r.cpss.faceSide||"左右未"})`),
-      r.cpss.arm===null ? "上肢: —" : (r.cpss.arm===0 ? "上肢: 正常" : `上肢: 異常(${r.cpss.armSide||"左右未"})`),
-      r.cpss.speech===null ? "言語: —" : `言語: ${r.cpss.speech===0 ? "正常":"異常"}`
-    ].join(" / ");
-
-    const elvoLine = (title, val) => {
-      if(val===null) return `${title}: —`;
-      if(title==="眼球位置"){
-        return val===0 ? `${title}: 正中` : `${title}: 共同偏視(${r.elvo.gazeDir||"—"})`;
-      }
-      return val===0 ? `${title}: できる` : `${title}: できない`;
-    };
-
-    const past = [...r.past].length ? ("既往歴: " + [...r.past].join(" / ")) : "既往歴: —";
-    const otherPast = r.otherPast.trim() ? r.otherPast.trim() : "—";
-    const anticoag = (() => {
-      if(!r.anticoag) return "—";
-      if(r.anticoag==="有り"){
-        const name = r.anticoagName.trim();
-        return name ? `有り(${name})` : "有り";
-      }
-      return r.anticoag;
-    })();
-
-    const v = (x) => x.trim()?x.trim():"—";
-    const gcs = `E${r.gcsE.trim()?r.gcsE.trim():"-"} V${r.gcsV.trim()?r.gcsV.trim():"-"} M${r.gcsM.trim()?r.gcsM.trim():"-"}`;
-
-    const sixV = (x) => (x===null) ? "—" : (x===0 ? "なし":"あり");
-
-    const kTotal = kpssScore();
-    const kText = (kTotal===null) ? "—" : `${kTotal}点`;
-
-    return `脳卒中対応記録
-
-ID: ${v(r.patientID)}
-年齢: ${v(r.age)}　性別: ${state.sex}
-認知症: ${r.dementia||"—"}
-抗凝固/抗血小板: ${anticoag}
-${past}
-その他既往歴: ${otherPast}
-最終健在: ${timeStr(r.lkw)}
-発見・発症時刻: ${timeStr(r.disc)}
-経過: ${elapsed}
-
-バイタル:
-・JCS: ${v(r.jcs)} / GCS: ${gcs}
-・BP: ${v(r.bpSys)}/${v(r.bpDia)} mmHg  SpO₂: ${v(r.spo2)}%  酸素: ${v(r.o2flow)}L ${v(r.o2pct)}%
-・HR: ${v(r.hr)}/分 ${r.rhythm}${(r.rhythm==="不整" && r.irreg) ? ", "+r.irreg : ""}
-・BS: ${v(r.bs)} mg/dl  BT: ${v(r.bt)} ℃
-・瞳孔: 右 ${v(r.pupilR)} mm / 左 ${v(r.pupilL)} mm （対光反射: 右${r.lightR||"未"}/左${r.lightL||"未"}）
-
-6項目:
-・脈不整: ${sixV(r.six.pulse)}
-・共同偏視: ${sixV(r.six.gaze)}
-・半側空間無視: ${sixV(r.six.neglect)}
-・半盲: ${sixV(r.six.hemianopia)}
-・失語: ${sixV(r.six.aphasia)}
-・片麻痺: ${sixV(r.six.hemiparesis)}
-
-CPSS: ${cpssJudgeText()}
-・${cpssParts}
-
-ELVO:
-・${elvoLine("眼球位置", r.elvo.gaze)}
-・${elvoLine("物品呼称", r.elvo.naming)}
-・${elvoLine("指の数", r.elvo.fingers)}
-
-KPSS: 合計 ${kText}
-・意識水準: ${r.kpss.arousal ?? "—"}, 意識障害: ${r.kpss.question ?? "—"}, 上肢R: ${r.kpss.uR ?? "—"}, 上肢L: ${r.kpss.uL ?? "—"}, 下肢R: ${r.kpss.lR ?? "—"}, 下肢L: ${r.kpss.lL ?? "—"}, 言語: ${r.kpss.lang ?? "—"}`;
-  };
-
-  // ---- Sync all derived UI ----
-  const syncElapsed = () => {
-    const el = elapsedMinutes();
-    $("elapsedBadge").textContent = "経過: " + (el===null ? "—" : formatElapsed(el));
-    const warn = (state.record.lkw && state.record.disc && new Date(state.record.disc) < new Date(state.record.lkw));
-    $("timeWarn").classList.toggle("hide", !warn);
-  };
-
-  const syncBadges = () => {
-    // basic state: age or times
-    const basic = inputState([state.record.age, state.record.lkw || state.record.disc]);
-    const six = inputState(Object.values(state.record.six));
-    const cpss = inputState([state.record.cpss.face, state.record.cpss.arm, state.record.cpss.speech, state.record.elvo.gaze, state.record.elvo.naming, state.record.elvo.fingers]);
-    const kpss = inputState(Object.values(state.record.kpss));
-
-    setBadge($("badge_basic"), basic);
-    setBadge($("badge_six"), six);
-    setBadge($("badge_cpss"), cpss);
-    setBadge($("badge_kpss"), kpss);
-
-    setBadge($("badgeSixState"), six);
-    setBadge($("badgeCpssState"), cpss);
-    setBadge($("badgeKpssState"), kpss);
-
-    const judge = cpssJudgeText();
-    $("cpssJudge").textContent = judge;
-    $("cpssJudge").className = "badge" + (judge==="陽性" ? " req" : (judge==="陰性" ? " ok" : (judge==="一部未入力" ? " warn" : "")));
-
-    const kt = kpssScore();
-    $("kpssTotal").textContent = "合計: " + (kt===null ? "—" : kt + "点");
-
-    $("summaryBox").textContent = summaryText();
-    $("summaryState").textContent = "生成済み";
-  };
-
-  const syncAll = () => { syncElapsed(); syncBadges(); };
-
-  // ---- Navigation ----
-  const showStep = (k) => {
-    $("step_overview").classList.toggle("hide", k!=="overview");
-    $("step_six").classList.toggle("hide", k!=="six");
-    $("step_cpss").classList.toggle("hide", k!=="cpss");
-    $("step_kpss").classList.toggle("hide", k!=="kpss");
-    $("step_summary").classList.toggle("hide", k!=="summary");
-  };
-
-  const syncStep = () => {
-    buildTabs(); // includes selected highlight
-    syncTabs();
-    showStep(state.steps[state.stepIndex]);
-    $("backBtn").disabled = state.stepIndex===0;
-    $("nextBtn").textContent = (state.stepIndex===state.steps.length-1) ? "完了" : "次へ";
-    syncAll();
-  };
-
-  // ---- Modal ----
-  let currentModalId = null;
-  const openModal = (id) => {
-    const item = loadHist().find(x=>x.id===id);
-    if(!item) return;
-    currentModalId=id;
-    $("modalTime").textContent = formatHistory(item.createdAt);
-    $("modalText").textContent = item.text;
-    $("modal").classList.add("show");
-  };
-  const closeModal = () => {
-    $("modal").classList.remove("show");
-    currentModalId=null;
-  };
-
-  // ---- Wire basic inputs ----
-  const bindText = (id, key) => {
-    const el = $(id);
-    el.addEventListener("input", ()=>{ state.record[key]=el.value; syncAll(); });
-  };
-
-  // past history buttons
-  const pastDefs = ["高血圧","不整脈","心疾患","糖尿病","脂質異常症","脳梗塞","脳出血"];
-  const renderPast = () => {
-    const wrap = $("pastBtns");
-    wrap.innerHTML="";
-    pastDefs.forEach(name=>{
-      const b=document.createElement("button");
-      b.className="btn";
-      b.textContent=name;
-      b.addEventListener("click",(e)=>{
-        e.preventDefault();
-        if(state.record.past.has(name)) state.record.past.delete(name);
-        else state.record.past.add(name);
-        b.classList.toggle("on", state.record.past.has(name));
-        syncAll();
-      });
-      wrap.appendChild(b);
-    });
-  };
-
-  const syncSexButtons = () => {
-    document.querySelectorAll("button[data-sex]").forEach(b=>{
-      b.classList.toggle("on", b.dataset.sex===state.sex);
-    });
-  };
-
-  const syncAnticoagButtons = () => {
-    document.querySelectorAll("button[data-anticoag]").forEach(b=>{
-      b.classList.toggle("on", b.dataset.anticoag===state.record.anticoag);
-    });
-    $("anticoagNameWrap").classList.toggle("hide", state.record.anticoag!=="有り");
-  };
-
-  const syncRhythmButtons = () => {
-    document.querySelectorAll("button[data-rhythm]").forEach(b=>{
-      b.classList.toggle("on", b.dataset.rhythm===state.record.rhythm);
-    });
-    $("irregWrap").classList.toggle("hide", state.record.rhythm!=="不整");
-    document.querySelectorAll("button[data-irreg]").forEach(b=>{
-      b.classList.toggle("on", b.dataset.irreg===state.record.irreg);
-    });
-  };
-
-  // ---- Copy / Share / Save ----
-  const toast = (msg="保存しました") => {
-    $("toast").textContent = msg;
-    $("toast").classList.add("show");
-    setTimeout(()=> $("toast").classList.remove("show"), 1200);
-  };
-
-  const doCopy = async (text) => {
-    try{
-      await navigator.clipboard.writeText(text);
-      toast("コピーしました");
-      return true;
-    }catch{
-      // fallback
-      const ta = document.createElement("textarea");
-      ta.value=text;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      ta.remove();
-      toast("コピーしました");
-      return true;
-    }
-  };
-
-  const doShare = async (text) => {
-    if(navigator.share){
-      try{
-        await navigator.share({ text });
-        toast("共有しました");
-        return true;
-      }catch{
-        // user cancelled
-        return false;
-      }
-    }else{
-      await doCopy(text);
-      toast("共有非対応→コピーしました");
-      return true;
-    }
-  };
-
-  // ---- Start/reset ----
-  $("startBtn").addEventListener("click", ()=>{
-    state.startedAt = new Date();
-    $("introCard").classList.add("hide");
-    $("appCard").classList.remove("hide");
-    $("footerbar").classList.remove("hide");
-    state.stepIndex=0;
-    syncStep();
-    window.scrollTo({top:0, behavior:"smooth"});
+    tabs.appendChild(b);
   });
 
-  $("clearHistoryBtn").addEventListener("click", ()=>{
-    if(!confirm("履歴を全削除します。よろしいですか？")) return;
-    clearHist();
-    renderIntroHistory();
-    toast("全削除しました");
-  });
+  // sex segmented
+  $("sexM").addEventListener("click", ()=>{ $("sexM").classList.add("on"); $("sexF").classList.remove("on"); });
+  $("sexF").addEventListener("click", ()=>{ $("sexF").classList.add("on"); $("sexM").classList.remove("on"); });
 
-  $("backBtn").addEventListener("click", ()=>{
-    if(state.stepIndex>0){ state.stepIndex--; syncStep(); window.scrollTo({top:0,behavior:"smooth"}); }
-  });
-  $("nextBtn").addEventListener("click", async ()=>{
-    if(state.stepIndex < state.steps.length-1){
-      state.stepIndex++; syncStep(); window.scrollTo({top:0,behavior:"smooth"});
-      return;
-    }
-    // 完了（共有画面の最後）
-    // ここでは何もしない（保存はコピー/共有でやる）
-    toast("完了");
-  });
-
-  // Summary: copy/share/new
-  const addFooterActionsForSummary = () => {
-    // footer buttons are fixed; on summary step, change labels to: 新規 / コピー / 共有
-    const k = state.steps[state.stepIndex];
-    if(k!=="summary"){
-      $("backBtn").textContent="戻る";
-      $("nextBtn").textContent = (state.stepIndex===state.steps.length-1) ? "完了" : "次へ";
-      $("backBtn").classList.remove("danger");
-      $("nextBtn").classList.add("primary");
-      return;
-    }
-    $("backBtn").textContent="新規評価";
-    $("nextBtn").textContent="コピー / 共有";
-  };
-
-  const interceptSummaryFooter = () => {
-    // override behavior on summary
-    $("backBtn").addEventListener("click", (e)=>{
-      const k = state.steps[state.stepIndex];
-      if(k!=="summary") return;
-      e.preventDefault();
-      // 新規評価：履歴に残さない（仕様）
-      if(!confirm("新規評価にします（履歴には残りません）。よろしいですか？")) return;
-      resetToIntro(false);
-    }, true);
-
-    $("nextBtn").addEventListener("click", async (e)=>{
-      const k = state.steps[state.stepIndex];
-      if(k!=="summary") return;
-      e.preventDefault();
-      const text = summaryText();
-      // まずコピー
-      await doCopy(text);
-      // 保存（コピー/共有で履歴に残す仕様）
-      addHist(text, state.startedAt || new Date());
-      state.startedAt = null;
-      // 共有は任意（Androidなら share 対応多い）
-      await doShare(text);
-      renderIntroHistory();
-    }, true);
-  };
-
-  const resetToIntro = (keepHistory=true) => {
-    // reset inputs (history handled elsewhere)
-    state.startedAt = null;
-    state.stepIndex = 0;
-    state.sex = "男";
-    state.record = JSON.parse(JSON.stringify({
-      patientID:"", age:"", dementia:"", anticoag:"", anticoagName:"",
-      past: [], otherPast:"",
-      lkw:"", disc:"",
-      jcs:"", gcsE:"", gcsV:"", gcsM:"",
-      bpSys:"", bpDia:"", spo2:"", o2flow:"", o2pct:"",
-      hr:"", rhythm:"SR", irreg:"",
-      bs:"", bt:"",
-      pupilR:"", pupilL:"", lightR:"", lightL:"",
-      six: { pulse:null, gaze:null, neglect:null, hemianopia:null, aphasia:null, hemiparesis:null },
-      cpss: { face:null, faceSide:"右", arm:null, armSide:"右", speech:null },
-      elvo: { gaze:null, gazeDir:"右", naming:null, fingers:null },
-      kpss: { arousal:null, question:null, uR:null, uL:null, lR:null, lL:null, lang:null },
-      mri: { metal:false, wig:false, powder:false, pacemaker:false, denture:false, hearing:false, patch:false },
-    }));
-    // restore Set for past
-    state.record.past = new Set();
-
-    // back to intro
-    $("introCard").classList.remove("hide");
-    $("appCard").classList.add("hide");
-    $("footerbar").classList.add("hide");
-    renderIntroHistory();
-    toast("リセットしました");
-    window.scrollTo({top:0,behavior:"smooth"});
-  };
-
-  // ---- Bind inputs ----
-  bindText("patientID","patientID");
-  bindText("age","age");
-  bindText("jcs","jcs"); bindText("gcsE","gcsE"); bindText("gcsV","gcsV"); bindText("gcsM","gcsM");
-  bindText("bpSys","bpSys"); bindText("bpDia","bpDia"); bindText("spo2","spo2"); bindText("o2flow","o2flow"); bindText("o2pct","o2pct");
-  bindText("hr","hr"); bindText("bs","bs"); bindText("bt","bt");
-  bindText("pupilR","pupilR"); bindText("pupilL","pupilL");
-
-  $("lightR").addEventListener("change",()=>{ state.record.lightR=$("lightR").value; syncAll(); });
-  $("lightL").addEventListener("change",()=>{ state.record.lightL=$("lightL").value; syncAll(); });
-
-  $("dementia").addEventListener("change",()=>{ state.record.dementia=$("dementia").value; syncAll(); });
-  $("anticoagName").addEventListener("input",()=>{ state.record.anticoagName=$("anticoagName").value; syncAll(); });
-
-  $("otherPast").addEventListener("input",()=>{ state.record.otherPast=$("otherPast").value; syncAll(); });
-
-  document.addEventListener("click",(e)=>{
-    const sexBtn = e.target.closest("button[data-sex]");
-    if(sexBtn){
-      e.preventDefault();
-      state.sex = sexBtn.dataset.sex;
-      syncSexButtons(); syncAll();
-    }
-    const acBtn = e.target.closest("button[data-anticoag]");
-    if(acBtn){
-      e.preventDefault();
-      state.record.anticoag = acBtn.dataset.anticoag;
-      if(state.record.anticoag!=="有り") state.record.anticoagName="";
-      syncAnticoagButtons(); syncAll();
-    }
-    const rhBtn = e.target.closest("button[data-rhythm]");
-    if(rhBtn){
-      e.preventDefault();
-      state.record.rhythm = rhBtn.dataset.rhythm;
-      if(state.record.rhythm!=="不整") state.record.irreg="";
-      syncRhythmButtons(); syncAll();
-    }
-    const irBtn = e.target.closest("button[data-irreg]");
-    if(irBtn){
-      e.preventDefault();
-      state.record.irreg = irBtn.dataset.irreg;
-      syncRhythmButtons(); syncAll();
-    }
-  });
-
-  $("lkw").addEventListener("change",()=>{ state.record.lkw=$("lkw").value; $("lkwText").textContent = state.record.lkw ? formatShort(state.record.lkw) : "—"; syncAll(); });
-  $("disc").addEventListener("change",()=>{ state.record.disc=$("disc").value; $("discText").textContent = state.record.disc ? formatShort(state.record.disc) : "—"; syncAll(); });
-  $("lkwUnknown").addEventListener("click",(e)=>{ e.preventDefault(); state.record.lkw=""; $("lkw").value=""; $("lkwText").textContent="不明"; syncAll(); });
-  $("discClear").addEventListener("click",(e)=>{ e.preventDefault(); state.record.disc=""; $("disc").value=""; $("discText").textContent="—"; syncAll(); });
-
-  // Modal buttons
-  $("closeModal").addEventListener("click", closeModal);
-  $("modal").addEventListener("click",(e)=>{ if(e.target === $("modal")) closeModal(); });
-
-  $("copyHist").addEventListener("click", async ()=>{
-    if(!currentModalId) return;
-    const item = loadHist().find(x=>x.id===currentModalId);
-    if(!item) return;
-    await doCopy(item.text);
-  });
-  $("shareHist").addEventListener("click", async ()=>{
-    if(!currentModalId) return;
-    const item = loadHist().find(x=>x.id===currentModalId);
-    if(!item) return;
-    await doShare(item.text);
-  });
-  $("deleteHist").addEventListener("click", ()=>{
-    if(!currentModalId) return;
-    if(!confirm("この履歴を削除します。よろしいですか？")) return;
-    delHist(currentModalId);
-    closeModal();
-    renderIntroHistory();
-    toast("削除しました");
-  });
-
-  // ---- Init ----
-  const init = () => {
-    // defaults
-    $("lkw").value = "";
-    $("disc").value = "";
-    $("lkwText").textContent="—";
-    $("discText").textContent="—";
-
-    renderIntroHistory();
-    renderPast();
-    renderSix();
-    renderCPSS();
-    renderKPSS();
-    renderMRI();
-
-    syncSexButtons();
-    syncAnticoagButtons();
-    syncRhythmButtons();
-    syncAll();
-
-    // step sync hooks
-    const origSyncStep = syncStep;
-    window.addEventListener("scroll", ()=>{}); // keep
-    // monkey patch: after step change, adjust footer labels
-    const _syncStep = () => {
-      origSyncStep();
-      addFooterActionsForSummary();
-    };
-    // replace references
-    syncStep = _syncStep;
-
-    // but we already call syncStep later; so just call:
-    addFooterActionsForSummary();
-  };
-
-  // intercept summary footer behavior
-  interceptSummaryFooter();
-
-  init();
-
+  // time placeholders (this mock keeps "不明/未入力" like screenshot)
 })();
 </script>
-
 </body>
 </html>
